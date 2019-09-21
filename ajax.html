@@ -1,0 +1,166 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <style type="text/css">
+    .container
+    {
+      background-color:lightblue;
+    }
+  </style>
+</head>
+<body>
+<button type="button" onclick="loadDoc()" class="btn btn-info" class="container">Get Data from Github</button>
+<div id="top" style="visibility: hidden;"></div>
+<div id="users" class="container" align="center" ></div>
+<div id="usersrepo"></div>
+
+
+<script>
+  var userArray=[];
+  var index=1;
+  var n=0;
+  var n2=0;
+  function addToLocalStorage(userArray)
+{
+  localStorage.userArray = JSON.stringify(userArray);
+}
+
+function showFromLocalStorage()
+{
+  if(!localStorage.userArray)
+  {
+    localStorage.userArray=JSON.stringify([]);
+  }
+  return JSON.parse(localStorage.userArray);
+}
+var xhttp = new XMLHttpRequest(); // Initialize the HTTP request.
+
+// Track the state changes of the request.
+xhttp.onreadystatechange=function() 
+{
+    // readyState 4 means the request is done.
+    // status 200 is a successful return.
+    if (xhttp.readyState == 4 && xhttp.status == 200) 
+    {
+      //document.getElementById("users").innerHTML = xhttp.responseText; // 'This is the output.'
+      let users = JSON.parse( xhttp.responseText) ;
+      if(Array.isArray( users)  && users.length )
+      {
+        users.forEach(function(user)
+                      {
+                          let node = document.createElement("p");                 // Create a <p> node
+                          let textNode = document.createTextNode("Id : " + user.id +" Name : "+ user.login + " Profile Link : " + user.html_url);
+                          let img_p=document.createElement("img");
+                          img_p.src=user.avatar_url;
+                          let btn=document.createElement("button");
+                          btn.innerHTML="get repos";
+                          btn.setAttribute("id",user.login);
+                          btn.setAttribute("class","btn btn-danger");
+                         
+                          img_p.setAttribute("height","100");
+                          img_p.setAttribute("with","100");
+                          node.appendChild(img_p);
+                          node.appendChild(textNode);
+                          node.appendChild(btn);
+
+
+                                                        // Append the text to <p>
+                          document.getElementById("users").appendChild(node);     // Append <p> to <div> with id="users"
+                           var obj=new Object();
+                          
+      obj.INDEX=index;
+      obj.id=user.id;
+      obj.login=user.login;
+      obj.html_url=user.html_url;
+      obj.avatar_url=user.avatar_url;
+      userArray.push(obj);
+      addToLocalStorage(userArray);
+      index++;
+       btn.addEventListener("click",function(event){
+                            loadDoc2(btn.id);
+                          });
+                      });  
+                      console.log(userArray); 
+      }
+     
+
+    }
+    else
+    {
+        // An error occurred during the request.
+       console.log(xhttp.status) ;
+    }
+     
+  };
+  let btn=document.createElement("button");
+     btn.innerHTML="NEXT";
+     btn.setAttribute("class","btn btn-link");
+     btn.addEventListener("click",function(){
+     n=n+5;
+     n2=n2+5;
+     loadDoc();
+     });
+      document.getElementById("top").appendChild(btn);
+      let btn2=document.createElement("button");
+     btn2.innerHTML="PREVIOUS";
+     btn2.setAttribute("class","btn btn-link");
+     btn2.addEventListener("click",function(){
+     n=n-5;
+     
+     loadDoc3();
+     });
+      document.getElementById("top").appendChild(btn2);
+function loadDoc() 
+{     
+  document.getElementById("top").setAttribute("style","visibility:visible");
+   document.getElementById("users").innerHTML="";
+  xhttp.open("GET", "https://api.github.com/users?since="+n+"&per_page=5");
+  xhttp.send();
+}
+function loadDoc3() 
+{     
+   document.getElementById("users").innerHTML="";
+  xhttp.open("GET", "https://api.github.com/users?since="+n+"&per_page=5");
+  xhttp.send();
+}
+
+
+var xht = new XMLHttpRequest();
+xht.addEventListener('load' , ()=>{
+ // readyState 4 means the request is done.
+    // status 200 is a successful return.
+    if (xht.readyState == 4 && xht.status == 200) 
+    {
+      //document.getElementById("users").innerHTML = xhttp.responseText; // 'This is the output.'
+      let repos = JSON.parse( xht.responseText) ;
+      if(Array.isArray( repos)  && repos.length )
+      {
+        repos.forEach(function(repo)
+                      {
+                          let node = document.createElement("div");   
+                         
+                          let textNode = document.createTextNode("Id : " + repo.id +" Name : "+ repo.name + " Project Link : " + repo.html_url);         // Create a text node
+                          node.appendChild(textNode);                              // Append the text to <p>
+                          document.getElementById("usersrepo").appendChild(node);     // Append <p> to <div> with id="users"
+                      });   
+      }
+    }
+    else
+    {
+        // An error occurred during the request.
+       console.log(xht.status) ;
+    }
+});
+
+
+function loadDoc2(user) 
+{
+  xht.open("GET", "https://api.github.com/users/"+user+"/repos");
+  xht.send();
+}
+
+</script>
+
+</body>
+</html>
